@@ -1,0 +1,11 @@
+name: hotels_50k
+channels:
+  defaults
+dependencies:
+  - python=3.7
+  - pip
+  - pip:
+    - opencv-python
+    - tensorflow-gpu>=1.5
+    - sklearn
+    - h5py

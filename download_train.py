@@ -3,13 +3,20 @@ import csv, multiprocessing, cv2, os
 import numpy as np
 import urllib
 import urllib.request
+from urllib.request import urlopen
+import ssl
+
 
 class AppURLopener(urllib.request.FancyURLopener):
     version = "Mozilla/5.0"
 
 opener = AppURLopener()
 def url_to_image(url):
-    resp = opener.open(url)
+    context = ssl.create_default_context();
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+
+    resp = urlopen(url, context=context)
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_UNCHANGED)
     return image
@@ -38,8 +45,8 @@ def download_and_resize(imList):
                 print('Good: ' + savePath)
             else:
                 print('Already saved: ' + savePath)
-        except:
-            print('Bad: ' + savePath)
+        except Exception as e:
+            print('Bad: ' + savePath + f"\n{e}")
 
 def main():
     hotel_f = open('./input/dataset/hotel_info.csv','r')
@@ -63,7 +70,8 @@ def main():
         images.append((chain,hotel,im_source,im_id,im_url))
 
     pool = multiprocessing.Pool()
-    NUM_THREADS = multiprocessing.cpu_count()
+    # NUM_THREADS = multiprocessing.cpu_count()
+    NUM_THREADS = 128
 
     imDict = {}
     for cpu in range(NUM_THREADS):
